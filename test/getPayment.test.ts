@@ -54,6 +54,17 @@ describe('When the user requests the records for a specific payment', () => {
         expect(JSON.parse(result.body)).toEqual({ message: 'Internal server error' });
         expect(getPaymentMock).toHaveBeenCalledWith(paymentId);
     });
+
+    it('Returns 400 if payment id is not a valid UUID', async () => {
+    const invalidPaymentId = 'invalid-uuid-format';
+    
+    const result = await handler({
+        pathParameters: { id: invalidPaymentId },
+    } as unknown as APIGatewayProxyEvent);
+    
+    expect(result.statusCode).toBe(400);
+    expect(JSON.parse(result.body)).toEqual({ message: 'Invalid payment id format' });
+});
 });
 
 afterEach(() => {
