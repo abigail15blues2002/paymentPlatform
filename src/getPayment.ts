@@ -1,6 +1,5 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
-import { getPayment } from './lib/payments';
-
+import { getPayment } from './lib/payments';import { validate as validateUUID } from 'uuid';
 
 export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     let paymentId = undefined;
@@ -10,6 +9,13 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
             return {
                 statusCode: 400,
                 body: JSON.stringify({ message: 'Missing payment id' }),
+            };
+        }
+        // Check for valid UUID
+        if (!validateUUID(paymentId)) {
+            return {
+                statusCode: 400,
+                body: JSON.stringify({ message: 'Invalid payment id format' }),
             };
         }
         const payment = await getPayment(paymentId);
