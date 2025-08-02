@@ -26,24 +26,31 @@ export class BeTestStack extends cdk.Stack {
         const specificPaymentResource = paymentsResource.addResource('{id}');
 
         // Functions
-        const createPaymentFunction = this.createLambda('createPayment', 'src/createPayment.ts');
+        const createPaymentFunction = this.createLambda('createPayment', 'src/createPayment.ts', {
+            SUPPORTED_CURRENCIES: 'AUD,USD,EUR,GBP,SGD,NZD,CAD',
+        });
         paymentsTable.grantWriteData(createPaymentFunction);
         paymentsResource.addMethod('POST', new LambdaIntegration(createPaymentFunction));
 
-        const getPaymentFunction = this.createLambda('getPayment', 'src/getPayment.ts');
+        const getPaymentFunction = this.createLambda('getPayment', 'src/getPayment.ts', {
+            PAYMENTS_TABLE: 'PaymentsTable',
+        });
         paymentsTable.grantReadData(getPaymentFunction);
         specificPaymentResource.addMethod('GET', new LambdaIntegration(getPaymentFunction));
 
-        const listPaymentsFunction = this.createLambda('listPayments', 'src/listPayments.ts');
+        const listPaymentsFunction = this.createLambda('listPayments', 'src/listPayments.ts', {
+            PAYMENTS_TABLE: 'PaymentsTable',
+        });
         paymentsTable.grantReadData(listPaymentsFunction);
         paymentsResource.addMethod('GET', new LambdaIntegration(listPaymentsFunction));
     }
 
-    createLambda = (name: string, path: string) => {
+    createLambda = (name: string, path: string, environment: Record<string, string> = {}) => {
         return new NodejsFunction(this, name, {
             functionName: name,
             runtime: Runtime.NODEJS_16_X,
             entry: path,
+            environment,
         });
     };
 }
