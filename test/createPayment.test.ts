@@ -3,7 +3,10 @@ import * as payments from '../src/lib/payments';
 import { APIGatewayProxyEvent } from 'aws-lambda';
 import { v4 as uuidv4, validate as validateUUID } from 'uuid';
 
-jest.mock('uuid');
+jest.mock('uuid', () => ({
+    v4: jest.fn(),
+    validate: jest.requireActual('uuid').validate // Use the real validation function
+}));
 
 const buildEvent = (body: object) => ({ body: JSON.stringify(body) } as unknown as APIGatewayProxyEvent);
 
