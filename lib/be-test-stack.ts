@@ -18,9 +18,11 @@ export class BeTestStack extends cdk.Stack {
         // API
         const paymentsApi = new RestApi(this, 'ofxPaymentsChallenge', {
             defaultCorsPreflightOptions: {
-                allowOrigins: Cors.ALL_ORIGINS,
-                allowMethods: Cors.ALL_METHODS,
+                allowOrigins: Cors.ALL_ORIGINS, // Specify allowed origins in production
+                allowMethods: ['GET', 'POST'],  // Specify allowed methods
+
             },
+            // Specify security headers if needed
         });
         const paymentsResource = paymentsApi.root.addResource('payments');
         const specificPaymentResource = paymentsResource.addResource('{id}');
