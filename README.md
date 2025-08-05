@@ -32,3 +32,37 @@ The `listPayments` endpoint allows callers to get a list of all payments they've
 Update the API so that users can fetch a list of payments by currency.
   
 **Hint**: DynamoDB allows you to add `FilterExpressions` to your queries in order to narrow down your search results. You can find out more about those expressions in the DynamoDB documentation.
+
+
+----------------------------------------------------------------------
+
+## Production-Ready Considerations
+
+### 1. Logging/Monitoring/Metrics
+- JSON is best practice for logging with ingestion pipelines (e.g., CloudWatch, Opensearch).
+- Monitor key metrics like latency, error rates, and throttling.
+- Use structured logging for better searchability and analysis.
+
+### 2. API Gateway
+- Implement rate limiting to prevent abuse.
+- Add security headers to protect against common vulnerabilities.
+- Use stages to separate environments (e.g., dev, staging, prod).
+- Best practice: Use separate AWS accounts for each environment.
+- Protect APIs with an authorizer unless the API is public.
+- For public APIs, use a custom domain for branding and consistency.
+- Enable access logs in CDK to capture request/response details.
+
+### 3. Lambdas
+- Add security headers in responses (e.g., `Strict-Transport-Security`, `X-Content-Type-Options`).
+- Use Lambda Layers for shared utility code (e.g., `lib` folder) to reduce duplication.
+- Tune timeout, memory, and ephemeral storage based on requirements.
+- Provision VPC, subnets, and networking for secure access to private resources.
+- Use concurrency settings to reduce cold starts for high-traffic functions.
+- Use versioning: API Gateway should point to specific Lambda versions (not `$LATEST`).
+
+### 4. DynamoDB Best Practices
+- **Point-in-Time Recovery (PITR)**: Enable PITR for continuous backups and recovery.
+- **On-Demand Mode**: Use on-demand billing for unpredictable workloads.
+- **Caching**: Use DynamoDB Accelerator (DAX) for read-heavy workloads.
+- **Disaster Recovery**: Use Global Tables for multi-region replication.
+- **Indexes**: Use Global Secondary Indexes (GSIs) for efficient queries.
