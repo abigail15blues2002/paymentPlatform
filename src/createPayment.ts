@@ -15,6 +15,11 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
         await createPayment(payment);
         return buildNoCacheResponse(201, { message: 'Payment created', result: payment.id });
     } catch (error: any) {
+        // JSON parsing errors (400 - Bad Request)
+        if (error instanceof SyntaxError && error.message.includes('JSON')) {
+            return buildResponse(400, { message: 'Invalid JSON format' });
+        }
+        
         // Validate errors (#4)
         if (error.message && (
             error.message.includes('Invalid payment object') ||

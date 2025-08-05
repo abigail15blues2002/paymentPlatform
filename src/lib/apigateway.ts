@@ -59,6 +59,6 @@ export const parseInput = (body: string): Object => {
         return JSON.parse(body);
     } catch (err) {
         console.error(err);
-        return {};
+        throw err; // Re-throw the error instead of returning {}
     }
 };
