@@ -2,6 +2,7 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import { buildResponse, parseInput } from './lib/apigateway';
 import { createPayment, Payment } from './lib/payments';
 import { v4 as uuidv4 } from 'uuid';
+import { buildNoCacheResponse } from './lib/apigateway';
 
 export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     try {
@@ -12,7 +13,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
             id: uuidv4(),
         };
         await createPayment(payment);
-        return buildResponse(201, { result: payment.id });
+        return buildNoCacheResponse(201, { message: 'Payment created', result: payment.id });
     } catch (error: any) {
         // Validate errors (#4)
         if (error.message && (
@@ -24,6 +25,6 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
         }
         // Log errors
         console.error('Error in createPayment handler:', error);
-        return buildResponse(500, { message: 'Internal server error' });
+        return buildNoCacheResponse(500, { message: 'Internal server error' });
     }
 };

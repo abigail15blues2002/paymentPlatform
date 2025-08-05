@@ -1,5 +1,6 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import { getPayment } from './lib/payments';import { validate as validateUUID } from 'uuid';
+import { buildCachedResponse, buildNoCacheResponse } from './lib/apigateway';
 
 export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     let paymentId = undefined;
@@ -13,28 +14,17 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
         }
         // Check for valid UUID
         if (!validateUUID(paymentId)) {
-            return {
-                statusCode: 400,
-                body: JSON.stringify({ message: 'Invalid payment id format' }),
-            };
+            return buildNoCacheResponse(400, { message: 'Invalid payment id format' });
         }
         const payment = await getPayment(paymentId);
         if (!payment) {
-            return {
-                statusCode: 404,
-                body: JSON.stringify({ message: 'Payment not found' }),
-            };
+            return buildNoCacheResponse(404, { message: 'Payment not found' });
         }
-        return {
-            statusCode: 200,
-            body: JSON.stringify(payment),
-        };
+        return buildCachedResponse(200, payment);
     } catch (error) {
         // Log paymentId for debugging
         console.error('Error in getPayment handler:', { error, paymentId });
-        return {
-            statusCode: 500,
-            body: JSON.stringify({ message: 'Internal server error' }),
-        };
+        return buildNoCacheResponse(500, { message: 'Internal server error' });
+
     }
 };
