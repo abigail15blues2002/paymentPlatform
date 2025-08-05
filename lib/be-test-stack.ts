@@ -12,7 +12,7 @@ export class BeTestStack extends cdk.Stack {
         // Dynamo DB table
         const paymentsTable = new Table(this, 'PaymentsTable', {
             tableName: 'PaymentsTable',
-            partitionKey: { name: 'paymentId', type: AttributeType.STRING },
+            partitionKey: { name: 'id', type: AttributeType.STRING },
         });
 
         // API
@@ -30,6 +30,7 @@ export class BeTestStack extends cdk.Stack {
         // Functions
         const createPaymentFunction = this.createLambda('createPayment', 'src/createPayment.ts', {
             SUPPORTED_CURRENCIES: 'AUD,USD,EUR,GBP,SGD,NZD,CAD',
+            PAYMENTS_TABLE: 'PaymentsTable',
         });
         paymentsTable.grantWriteData(createPaymentFunction);
         paymentsResource.addMethod('POST', new LambdaIntegration(createPaymentFunction));
