@@ -26,8 +26,8 @@ async function retryDynamo<T>(fn: () => Promise<T>, maxRetries = 3, baseDelayMs 
     }
 }
 
-// Use environment variable for table name, fallback to 'Payments' for local/testing
-const PAYMENTS_TABLE = process.env.PAYMENTS_TABLE || 'Payments';
+// Use environment variable for table name, fallback to 'PaymentsTable' for local/testing
+const PAYMENTS_TABLE = process.env.PAYMENTS_TABLE || 'PaymentsTable';
 
 export const getPayment = async (paymentId: string): Promise<Payment | null> => {
     try {
