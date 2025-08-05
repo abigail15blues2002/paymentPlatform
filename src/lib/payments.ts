@@ -35,7 +35,7 @@ export const getPayment = async (paymentId: string): Promise<Payment | null> => 
             DocumentClient.send(
                 new GetCommand({
                     TableName: PAYMENTS_TABLE,
-                    Key: { paymentId },
+                    Key: { id: paymentId },
                 })
             )
         );
