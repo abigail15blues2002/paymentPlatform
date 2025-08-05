@@ -15,6 +15,13 @@ export class BeTestStack extends cdk.Stack {
             partitionKey: { name: 'id', type: AttributeType.STRING },
         });
 
+        // Add GSI for currency filtering
+        paymentsTable.addGlobalSecondaryIndex({
+            indexName: 'currency-index',
+            partitionKey: { name: 'currency', type: AttributeType.STRING },
+            sortKey: { name: 'id', type: AttributeType.STRING }, // Optional: for sorting
+        });
+
         // API
         const paymentsApi = new RestApi(this, 'ofxPaymentsChallenge', {
             defaultCorsPreflightOptions: {

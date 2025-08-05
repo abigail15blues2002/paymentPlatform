@@ -1,5 +1,5 @@
 import { DocumentClient } from './dynamodb';
-import { GetCommand, PutCommand, ScanCommand } from '@aws-sdk/lib-dynamodb';
+import { GetCommand, PutCommand, ScanCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
 
 // Retry helper for DynamoDB operations (handles throttling and transient errors)
 async function retryDynamo<T>(fn: () => Promise<T>, maxRetries = 3, baseDelayMs = 100): Promise<T> {
@@ -48,20 +48,29 @@ export const getPayment = async (paymentId: string): Promise<Payment | null> => 
 
 export const listPayments = async (currency?: string): Promise<Payment[]> => {
     try {
-        const params: any = {
-            TableName: PAYMENTS_TABLE,
-        };
         if (currency) {
-            params.FilterExpression = '#currency = :currency';
-            params.ExpressionAttributeNames = { '#currency': 'currency' };
-            params.ExpressionAttributeValues = { ':currency': currency };
+            // Use Query on GSI (much faster than Scan with filter)
+            const result = await retryDynamo(() =>
+                DocumentClient.send(new QueryCommand({
+                    TableName: PAYMENTS_TABLE,
+                    IndexName: 'currency-index',
+                    KeyConditionExpression: '#currency = :currency',
+                    ExpressionAttributeNames: { '#currency': 'currency' },
+                    ExpressionAttributeValues: { ':currency': currency },
+                    Limit: 100,
+                }))
+            );
+            return (result.Items as Payment[]) || [];
+        } else {
+            // Scan for all payments
+            const result = await retryDynamo(() =>
+                DocumentClient.send(new ScanCommand({
+                    TableName: PAYMENTS_TABLE,
+                    Limit: 100,
+                }))
+            );
+            return (result.Items as Payment[]) || [];
         }
-        const result = await retryDynamo(() =>
-            DocumentClient.send(
-                new ScanCommand(params)
-            )
-        );
-        return (result.Items as Payment[]) || [];
     } catch (error) {
         console.error('Error listing payments:', error);
         throw new Error('Failed to list payments');
