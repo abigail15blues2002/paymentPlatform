@@ -62,4 +62,18 @@ describe('createPayment handler', () => {
         expect(JSON.parse(result.body)).toEqual({ message: 'Internal server error' });
         expect(createPaymentMock).toHaveBeenCalled();
     });
+
+    it('returns 400 for invalid JSON format', async () => {
+        const event = { body: '{"amount": 100, "currency": "AUD"' } as unknown as APIGatewayProxyEvent;
+        const result = await handler(event);
+        expect(result.statusCode).toBe(400);
+        expect(JSON.parse(result.body)).toEqual({ message: 'Invalid JSON format' });
+    });
+
+    it('returns 400 for completely invalid JSON', async () => {
+        const event = { body: 'not-json-at-all' } as unknown as APIGatewayProxyEvent;
+        const result = await handler(event);
+        expect(result.statusCode).toBe(400);
+        expect(JSON.parse(result.body)).toEqual({ message: 'Invalid JSON format' });
+    });
 });
