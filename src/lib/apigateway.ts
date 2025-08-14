@@ -1,4 +1,5 @@
 import { APIGatewayProxyResult } from 'aws-lambda';
+import * as crypto from 'crypto';
 
 interface CacheOptions {
     maxAge?: number; // in seconds
@@ -41,17 +42,9 @@ export const buildNoCacheResponse = (statusCode: number, body: Object): APIGatew
     return buildResponse(statusCode, body, { enableCaching: false });
 };
 
-// Simple ETag based on response content
-const generateETag = (body: Object): string => {
-    const content = JSON.stringify(body);
-    // Simple hash function for ETag (not cryptographically secure in production)
-    let hash = 0;
-    for (let i = 0; i < content.length; i++) {
-        const char = content.charCodeAt(i);
-        hash = ((hash << 5) - hash) + char;
-        hash = hash & hash; // Convert to 32-bit integer
-    }
-    return `"${Math.abs(hash).toString(16)}"`;
+export const generateETag = (body: Object): string => {
+    const hash = crypto.createHash('md5').update(JSON.stringify(body)).digest('hex');
+    return `"${hash}"`;
 };
 
 export const parseInput = (body: string): Object => {
