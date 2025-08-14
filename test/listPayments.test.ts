@@ -42,4 +42,23 @@ describe('listPayments handler', () => {
         expect(JSON.parse(result.body)).toEqual({ data: [] });
         expect(listPaymentsMock).toHaveBeenCalledWith('EUR');
     });
+    it('returns 400 if currency query parameter is missing', async () => {
+        const event = buildEvent();
+        const result = await handler(event);
+        expect(result.statusCode).toBe(400);
+        expect(JSON.parse(result.body)).toEqual({ message: 'Missing currency query parameter' });
+    });
+    it('returns 400 if unsupported currency is specified', async () => {
+        const event = buildEvent({ currency: 'XYZ' });
+        const result = await handler(event);
+        expect(result.statusCode).toBe(400);
+        expect(JSON.parse(result.body)).toEqual({ message: 'Unsupported currency' });
+    });
+    it('returns 404 if no payments found for specified currency', async () => {
+        const listPaymentsMock = jest.spyOn(payments, 'listPayments').mockResolvedValueOnce([]);
+        const event = buildEvent({ currency: 'GBP' });
+        const result = await handler(event);
+        expect(result.statusCode).toBe(404);
+        expect(JSON.parse(result.body)).toEqual({ message: 'No payments found for the specified currency' });
+    });
 });
