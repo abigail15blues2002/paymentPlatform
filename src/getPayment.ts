@@ -8,10 +8,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     try {
         paymentId = event.pathParameters?.id;
         if (!paymentId) {
-            return {
-                statusCode: 400,
-                body: JSON.stringify({ message: 'Missing payment id' }),
-            };
+            return buildNoCacheResponse(400, { message: 'Missing payment id' });
         }
         // Check for valid UUID
         if (!validateUUID(paymentId)) {
